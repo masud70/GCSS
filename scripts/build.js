@@ -4,7 +4,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { Marked } from 'marked';
-import site from './site.config.js';
+import config from './site.config.js';
+
+// The public address can be overridden at build time (the GitHub Pages workflow sets SITE_URL,
+// e.g. https://masud70.github.io/GCSS). When it has a path, every internal link gets that prefix.
+const site = { ...config, baseURL: (process.env.SITE_URL || config.baseURL).replace(/\/+$/, '') };
+const BASE = new URL(site.baseURL).pathname.replace(/\/+$/, '');
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const APP = path.join(ROOT, 'app');
@@ -768,6 +773,14 @@ function headHtml(node, description, items, ctx) {
 // ---------------------------------------------------------------------------
 // Output
 // ---------------------------------------------------------------------------
+// Prefix site-relative links ("/about/", "/assets/…") with the base path, e.g. "/GCSS/about/".
+function withBase(html) {
+  if (!BASE) return html;
+  return html
+    .replace(/(\s(?:href|src|action|poster)=")\/(?!\/)/g, `$1${BASE}/`)
+    .replace(/("href":")\/(?!\/)/g, `$1${BASE}/`); // event links in the calendar's JSON
+}
+
 function fill(template, values) {
   return template.replace(/\{\{(\w+)\}\}/g, (m, key) => (key in values ? values[key] : m));
 }
@@ -894,7 +907,7 @@ export function build({ log = console.log } = {}) {
   cleanDist();
   for (const o of output) {
     fs.mkdirSync(path.dirname(o.file), { recursive: true });
-    fs.writeFileSync(o.file, o.html);
+    fs.writeFileSync(o.file, withBase(o.html));
   }
   fs.mkdirSync(path.join(DIST, 'assets'), { recursive: true });
   fs.copyFileSync(path.join(SRC, 'main.js'), path.join(DIST, 'assets', 'main.js'));

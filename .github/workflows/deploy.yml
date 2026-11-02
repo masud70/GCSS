@@ -1,0 +1,52 @@
+# Builds the site and publishes it to GitHub Pages.
+# Runs on every push to main, every Monday (so event lists and the calendar feed stay current),
+# and on demand from the Actions tab ("Run workflow").
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 12 * * 1" # Mondays 12:00 UTC (early morning in Winnipeg)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - id: pages
+        uses: actions/configure-pages@v5
+      - run: npm ci
+      - run: npm run build
+        env:
+          # The public address (e.g. https://masud70.github.io/GCSS, or a custom domain once set),
+          # so links get the right prefix. Winnipeg time decides "upcoming" vs "past" events.
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
+          TZ: America/Winnipeg
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

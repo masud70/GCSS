@@ -504,16 +504,11 @@ social: {
 
 ## 8. Publish
 
-```sh
-npm run build
-```
+The site publishes itself: **every push to `main` rebuilds it and puts it on GitHub Pages** (see `.github/workflows/deploy.yml`). It also rebuilds every Monday, so event lists and the calendar stay current. To publish by hand, open the repository's **Actions** tab → *Deploy to GitHub Pages* → **Run workflow**.
 
-This creates the finished website in `dist/`. On the hosting service, use:
-
-- **Build command:** `npm run build`
-- **Publish folder:** `dist`
-
-Drafts are never published.
+- Live address: `https://masud70.github.io/GCSS/` (or the custom domain, once one is set in **Settings → Pages**; nothing else needs to change).
+- Drafts are never published.
+- To test the production build locally: `npm run build` (output in `dist/`).
 
 ---
 

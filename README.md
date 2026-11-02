@@ -10,6 +10,6 @@ npm run dev     # live preview at http://localhost:3000 (includes drafts)
 npm run build   # production site in dist/
 ```
 
-Requires Node.js 20 or newer. To deploy, use `npm run build` as the build command and publish `dist/`.
+Requires Node.js 20 or newer. Pushing to `main` deploys to GitHub Pages automatically (`.github/workflows/deploy.yml`); on any other static host, use `npm run build` and publish `dist/`.
 
 **Maintaining the site** (adding pages, events, executives, resources, and every formatting option, with examples): see [MAINTAINING.md](MAINTAINING.md).
